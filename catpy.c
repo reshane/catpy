@@ -56,13 +56,23 @@ void slurp_file(const char* file_name)
     write_error("Cat cannot py because it does not know when to stop!");
   }
   // syscall read that number of bytes into a malloced cstr
-  char *buf = malloc(count);
-  ssize_t bytes_read = read(fd, buf, count);
-  // pass the string to writefile
-  const char *buffer = buf;
-  write_file(buffer, count);
+  // count is the number of bytes that we want to eventually process
+#define BUF_CAP 256
+  
+  char buf[BUF_CAP];
+  int unread_bytes = count;
+  while (unread_bytes) {
+    if (unread_bytes >= BUF_CAP) {
+      read(fd, buf, BUF_CAP);
+      write_file(buf, BUF_CAP);
+      unread_bytes -= BUF_CAP;
+    } else {
+      read(fd, buf, unread_bytes);
+      write_file(buf, unread_bytes);
+      unread_bytes = 0;
+    }
+  }
   write_file(SUCCESS_MESSAGE, SUCC_SIZE);
-  free(buf);
 }
 
 // There apre five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
