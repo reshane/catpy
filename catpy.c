@@ -62,6 +62,7 @@ void slurp_file(const char* file_name)
   const char *buffer = buf;
   write_file(buffer, count);
   write_file(SUCCESS_MESSAGE, SUCC_SIZE);
+  free(buf);
 }
 
 // There apre five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
