@@ -64,7 +64,7 @@ void slurp_file(const char* file_name)
   write_file(SUCCESS_MESSAGE, SUCC_SIZE);
 }
 
-// There are five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
+// There apre five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
 // lseek(2)
 // O_RDONLY and not O_CREAT(auto not specified)
 
