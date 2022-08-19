@@ -70,6 +70,12 @@ void slurp_file(const char* file_name)
 
 int main(int argc, char* argv[])
 {
-  slurp_file("test.file");
+  if (argc < 2) {
+    write_error("Usage: ./catpy <filename>\n");
+    return 1;
+  }
+  // here we want to store file_name in a const char* and pass it to slurp_file
+  const char *filename = argv[1];
+  slurp_file(filename);
   return 0;
 }
