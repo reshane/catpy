@@ -17,7 +17,7 @@
 
 size_t get_str_sz(const char*);
 
-#define SUCCESS_MESSAGE "\nCats can pee!\n"
+#define SUCCESS_MESSAGE "\nCats can pee:)\n"
 #define SUCC_SIZE get_str_sz(SUCCESS_MESSAGE)
 
 size_t get_str_sz(const char* buffer)
@@ -75,7 +75,7 @@ void slurp_file(const char* file_name)
   write_file(SUCCESS_MESSAGE, SUCC_SIZE);
 }
 
-// There apre five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
+// There are five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
 // lseek(2)
 // O_RDONLY and not O_CREAT(auto not specified)
 
