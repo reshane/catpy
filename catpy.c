@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define STD_OUT 1
 #define STD_ERR 2
@@ -19,6 +20,7 @@ size_t get_str_sz(const char*);
 
 #define SUCCESS_MESSAGE "\nCats can pee:)\n"
 #define SUCC_SIZE get_str_sz(SUCCESS_MESSAGE)
+#define _ASSERT_MESSAGE(test, message) assert(((void)message, test))
 
 size_t get_str_sz(const char* buffer)
 {
@@ -72,7 +74,6 @@ void slurp_file(const char* file_name)
       unread_bytes = 0;
     }
   }
-  write_file(SUCCESS_MESSAGE, SUCC_SIZE);
 }
 
 // There are five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
@@ -81,12 +82,58 @@ void slurp_file(const char* file_name)
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2) {
+  if (argc < 2 || argc%2 != 0) {
     write_error("Usage: ./catpy <filename>\n");
     return 1;
   }
-  // here we want to store file_name in a const char* and pass it to slurp_file
-  const char *filename = argv[1];
+  if (argc == 2) {
+    const char *filename = argv[1];
+    slurp_file(filename);
+    write_file(SUCCESS_MESSAGE, SUCC_SIZE);
+    return 0;
+  }
+
+  // we can read them all in and anything that isn't paired with a -* is the filename
+  int filename_found = 0, message_len = SUCC_SIZE;
+  char *message, *pot_filename;
+  for (int i = 1; i < argc; ++i) {
+    if (argv[i][0] == '-') {
+      // this is a flag and we can switch on the character
+      const char c = argv[i][1];
+      switch (c) {
+        case '\0' :
+          _ASSERT_MESSAGE(0, "Usage");
+          return 1;
+          break;
+        case 'm':
+          message = argv[++i];
+          int j=-1;
+          while (message[++j]!='\0');
+          message_len = j;
+          break;
+        case 's':
+          message = SUCCESS_MESSAGE;
+          break;
+      } 
+      
+    } else {
+      pot_filename = argv[i];
+      if (access(pot_filename, F_OK) != 0) {
+        // the file does not exist
+        write_error("Cat cannot py because the cat cannot find a file to py.");
+        return 1;
+      }
+    }
+  }
+  const char *filename = pot_filename;
+  if (access(filename, F_OK) != 0) {
+    // the file does not exist
+    write_error("Cat cannot py because the cat cannot find a file to py.\n");
+    return 1;
+  }
   slurp_file(filename);
+  write_file("\n", 1);
+  write_file(message, message_len);
+  write_file("\n", 1);
   return 0;
 }
