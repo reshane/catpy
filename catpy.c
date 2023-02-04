@@ -74,6 +74,30 @@ void slurp_file(const char* file_name)
       unread_bytes = 0;
     }
   }
+  close(fd);
+}
+
+void print_usage() {
+  const char *usage = "Usage:./catpy <filename>\n\t-m <message>\n";
+  write_error(usage);
+  exit(1);
+}
+
+int convert_count_string(char *count_string) {
+  int result = 0, len = -1;
+  while (count_string[++len]!='\0') {
+    if (count_string[len] > '9' || count_string[len] < '0') {
+      print_usage();
+      exit(1);
+    }
+  }
+  int d = 0;
+  while (d < len) {
+    result *= 10;
+    result += (count_string[d] - (int)'0');
+    d++;
+  }
+  return result;
 }
 
 // There are five system calls that generate file descriptors: create, open, fcntl, dup and pipe.
@@ -83,7 +107,7 @@ void slurp_file(const char* file_name)
 int main(int argc, char* argv[])
 {
   if (argc < 2 || argc%2 != 0) {
-    write_error("Usage: ./catpy <filename>\n");
+    print_usage();
     return 1;
   }
   if (argc == 2) {
@@ -94,15 +118,15 @@ int main(int argc, char* argv[])
   }
 
   // we can read them all in and anything that isn't paired with a -* is the filename
-  int filename_found = 0, message_len = SUCC_SIZE;
-  char *message, *pot_filename;
+  int filename_found = 0, message_len = SUCC_SIZE, count = 1;
+  char *message, *pot_filename, *count_string;
   for (int i = 1; i < argc; ++i) {
     if (argv[i][0] == '-') {
       // this is a flag and we can switch on the character
       const char c = argv[i][1];
       switch (c) {
         case '\0' :
-          _ASSERT_MESSAGE(0, "Usage");
+          print_usage();
           return 1;
           break;
         case 'm':
@@ -111,9 +135,13 @@ int main(int argc, char* argv[])
           while (message[++j]!='\0');
           message_len = j;
           break;
-        case 's':
-          message = SUCCESS_MESSAGE;
+        case 'c':
+          count_string = argv[++i];
+          count = convert_count_string(count_string);
           break;
+        default:
+          print_usage();
+          exit(1);
       } 
       
     } else {
@@ -131,8 +159,10 @@ int main(int argc, char* argv[])
     write_error("Cat cannot py because the cat cannot find a file to py.\n");
     return 1;
   }
-  slurp_file(filename);
-  write_file("\n", 1);
+  for (int i = 0; i < count; ++i) {
+    slurp_file(filename);
+    write_file("\n", 1);
+  }
   write_file(message, message_len);
   write_file("\n", 1);
   return 0;
